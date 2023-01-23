@@ -13,7 +13,7 @@ function GridNode({
     isStart,
     isFinish,
     isVisited,
-    isShortestPath,
+    isPath,
     onMouseDown,
     onMouseUp,
     onMouseEnter,
@@ -26,7 +26,7 @@ function GridNode({
                 isStart,
                 isFinish,
                 isVisited,
-                isShortestPath
+                isPath
             )}
             onMouseDown={onMouseDown}
             onMouseUp={onMouseUp}
@@ -42,7 +42,7 @@ function getClassNames(
     isStart?: boolean,
     isFinish?: boolean,
     isVisited?: boolean,
-    isShortestPath?: boolean
+    isPath?: boolean
 ) {
     const classNames = ["border", "w-6", "h-6"];
     if (isWall) {
@@ -51,10 +51,10 @@ function getClassNames(
         classNames.push("bg-green-500", "cursor-move");
     } else if (isFinish) {
         classNames.push("bg-red-500", "cursor-move");
+    } else if (isPath) {
+        classNames.push("bg-yellow-500");
     } else if (isVisited) {
         classNames.push("bg-blue-500");
-    } else if (isShortestPath) {
-        classNames.push("bg-yellow-500");
     }
     classNames.push("border-slate-500");
     return classNames.join(" ");
@@ -66,7 +66,7 @@ function areEqual(prevProps: GridNodeProps, nextProps: GridNodeProps) {
         prevProps.isStart === nextProps.isStart &&
         prevProps.isFinish === nextProps.isFinish &&
         prevProps.isVisited === nextProps.isVisited &&
-        prevProps.isShortestPath === nextProps.isShortestPath
+        prevProps.isPath === nextProps.isPath
     );
 }
 

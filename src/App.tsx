@@ -1,12 +1,19 @@
 import { useRef, useState } from "react";
 import GridNode from "./components/gridNode";
 import useWindowDimensions from "./hooks/useWindowDimensions";
-import { GridNodeData, MouseDownState } from "./types/grid.type";
+import { dfs } from "./pathfinding/dfs";
+import { Coordinates, GridNodeData, MouseDownState } from "./types/grid.type";
 
 function App() {
     const { height, width } = useWindowDimensions();
     const [grid, setGrid] = useState<GridNodeData[][]>(
         createGrid(Math.floor(height / 24) - 4, Math.floor(width / 24) - 4)
+    );
+    const [start, setStart] = useState<Coordinates>(
+        getStartCoordinates(
+            Math.floor(height / 24) - 4,
+            Math.floor(width / 24) - 4
+        )
     );
     const [mouseDown, setMouseDown] = useState<MouseDownState>({});
     const isMouseDownState = useRef<MouseDownState>();
@@ -29,15 +36,22 @@ function App() {
         setMouseDown({ isMouseDown: true });
         setGridWall(row, col);
     };
-    const handleMouseUp = () => {
+    const handleMouseUp = (row: number, col: number) => {
+        if (isMouseDownState.current?.isStart) {
+            setStart({ row, col });
+        }
         setMouseDown({});
     };
     const handleMouseEnter = (row: number, col: number) => {
         if (isMouseDownState.current?.isStart) {
-            setGrid((prevGrid) => updateSingleGridNode(prevGrid, row, col, { isStart: true }));
+            setGrid((prevGrid) =>
+                updateSingleGridNode(prevGrid, row, col, { isStart: true })
+            );
             return;
         } else if (isMouseDownState.current?.isFinish) {
-            setGrid((prevGrid) => updateSingleGridNode(prevGrid, row, col, { isFinish: true }));
+            setGrid((prevGrid) =>
+                updateSingleGridNode(prevGrid, row, col, { isFinish: true })
+            );
             return;
         }
         if (!isMouseDownState.current?.isMouseDown) return;
@@ -46,17 +60,61 @@ function App() {
     };
     const handleMouseLeave = (row: number, col: number) => {
         if (isMouseDownState.current?.isStart) {
-            setGrid((prevGrid) => updateSingleGridNode(prevGrid, row, col, { isStart: true }));
+            setGrid((prevGrid) =>
+                updateSingleGridNode(prevGrid, row, col, { isStart: true })
+            );
             return;
         }
         if (isMouseDownState.current?.isFinish) {
-            setGrid((prevGrid) => updateSingleGridNode(prevGrid, row, col, { isFinish: true }));
+            setGrid((prevGrid) =>
+                updateSingleGridNode(prevGrid, row, col, { isFinish: true })
+            );
             return;
+        }
+    };
+
+    const handleDFS = () => {
+        const { visited, path } = dfs(
+            grid.map((row) => row.map((node) => ({ ...node }))),
+            start
+        );
+        visualizeAlgorithm(visited, path);
+    };
+
+    const visualizeAlgorithm = (
+        visited: Coordinates[],
+        path?: Coordinates[]
+    ) => {
+        for (let i = 0; i < visited.length; i++) {
+            setTimeout(() => {
+                const { row, col } = visited[i];
+                setGrid((prevGrid) =>
+                    updateSingleGridNode(prevGrid, row, col, {
+                        isVisited: true,
+                    })
+                );
+            }, 100 * i);
+        }
+        if (!path) return;
+        console.log(path);
+        const delay = 100 * visited.length;
+        for (let i = 0; i < path.length; i++) {
+            setTimeout(() => {
+                const { row, col } = path[i];
+                setGrid((prevGrid) =>
+                    updateSingleGridNode(prevGrid, row, col, {
+                        isPath: true,
+                    })
+                );
+            }, delay + 100 * i);
         }
     };
 
     return (
         <div className="w-full h-screen flex items-center justify-center">
+            <button title="DFS" className="w-8 h-8" onClick={handleDFS}>
+                DFS
+            </button>
             <div>
                 {grid.map((row, rowIndex) => {
                     return (
@@ -69,7 +127,9 @@ function App() {
                                         onMouseDown={() =>
                                             handleMouseDown(rowIndex, nodeIndex)
                                         }
-                                        onMouseUp={() => handleMouseUp()}
+                                        onMouseUp={() =>
+                                            handleMouseUp(rowIndex, nodeIndex)
+                                        }
                                         onMouseEnter={() =>
                                             handleMouseEnter(
                                                 rowIndex,
@@ -102,14 +162,17 @@ const createGrid = (rows: number, columns: number): GridNodeData[][] => {
         }
         grid[i] = currentRow;
     }
-    if (rows > 20 && columns > 20) {
-        grid[10][10].isStart = true;
-        grid[rows - 11][columns - 11].isFinish = true;
-    } else {
-        grid[0][0].isStart = true;
-        grid[rows - 1][columns - 1].isFinish = true;
-    }
+    const { row, col } = getStartCoordinates(rows, columns);
+    grid[row][col].isStart = true;
+    grid[rows - row - 1][columns - col - 1].isFinish = true;
     return grid;
+};
+
+const getStartCoordinates = (rows: number, columns: number): Coordinates => {
+    if (rows > 20 && columns > 20) {
+        return { row: 10, col: 10 };
+    }
+    return { row: 0, col: 0 };
 };
 
 const createNode = (): GridNodeData => {
@@ -118,7 +181,7 @@ const createNode = (): GridNodeData => {
         isStart: false,
         isFinish: false,
         isVisited: false,
-        isShortestPath: false,
+        isPath: false,
     };
 };
 
@@ -126,7 +189,7 @@ const updateSingleGridNode = (
     grid: GridNodeData[][],
     row: number,
     col: number,
-    { isWall, isStart, isFinish }: GridNodeData
+    { isWall, isStart, isFinish, isVisited, isPath }: GridNodeData
 ) => {
     return grid.map((rowOfNodes, rowIndex) => {
         return rowOfNodes.map((node, nodeIndex) => {
@@ -140,6 +203,12 @@ const updateSingleGridNode = (
                 }
                 if (isFinish) {
                     newNode.isFinish = !node.isFinish;
+                }
+                if (isVisited) {
+                    newNode.isVisited = !node.isVisited;
+                }
+                if (isPath) {
+                    newNode.isPath = !node.isPath;
                 }
                 return newNode;
             }
