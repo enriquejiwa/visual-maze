@@ -1,45 +1,58 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import GridNode from "./components/gridNode";
 import useWindowDimensions from "./hooks/useWindowDimensions";
-import { GridNodeData } from "./types/grid.type";
+import { GridNodeData, MouseDownState } from "./types/grid.type";
 
 function App() {
     const { height, width } = useWindowDimensions();
     const [grid, setGrid] = useState<GridNodeData[][]>(
         createGrid(Math.floor(height / 24) - 4, Math.floor(width / 24) - 4)
     );
-    const [isMouseDown, setIsMouseDown] = useState(false);
-    const isMouseDownState = useRef<boolean>();
-    isMouseDownState.current = isMouseDown;
+    const [mouseDown, setMouseDown] = useState<MouseDownState>({});
+    const isMouseDownState = useRef<MouseDownState>();
+    isMouseDownState.current = mouseDown;
 
     const setGridWall = (row: number, col: number) => {
-        setGrid((prevGrid) => {
-            return prevGrid.map((rowOfNodes, rowIndex) => {
-                return rowOfNodes.map((node, nodeIndex) => {
-                    if (rowIndex === row && nodeIndex === col) {
-                        return {
-                            ...node,
-                            isWall: !node.isWall,
-                        };
-                    }
-                    return node;
-                });
-            });
-        });
+        setGrid((prevGrid) =>
+            updateSingleGridNode(prevGrid, row, col, { isWall: true })
+        );
     };
 
     const handleMouseDown = (row: number, col: number) => {
-        if (grid[row][col].isStart || grid[row][col].isFinish) return;
-        setIsMouseDown(true);
+        if (grid[row][col].isStart) {
+            setMouseDown({ isStart: true });
+            return;
+        } else if (grid[row][col].isFinish) {
+            setMouseDown({ isFinish: true });
+            return;
+        }
+        setMouseDown({ isMouseDown: true });
         setGridWall(row, col);
     };
     const handleMouseUp = () => {
-        setIsMouseDown(false);
+        setMouseDown({});
     };
     const handleMouseEnter = (row: number, col: number) => {
-        if (!isMouseDownState.current) return;
+        if (isMouseDownState.current?.isStart) {
+            setGrid((prevGrid) => updateSingleGridNode(prevGrid, row, col, { isStart: true }));
+            return;
+        } else if (isMouseDownState.current?.isFinish) {
+            setGrid((prevGrid) => updateSingleGridNode(prevGrid, row, col, { isFinish: true }));
+            return;
+        }
+        if (!isMouseDownState.current?.isMouseDown) return;
         if (grid[row][col].isStart || grid[row][col].isFinish) return;
         setGridWall(row, col);
+    };
+    const handleMouseLeave = (row: number, col: number) => {
+        if (isMouseDownState.current?.isStart) {
+            setGrid((prevGrid) => updateSingleGridNode(prevGrid, row, col, { isStart: true }));
+            return;
+        }
+        if (isMouseDownState.current?.isFinish) {
+            setGrid((prevGrid) => updateSingleGridNode(prevGrid, row, col, { isFinish: true }));
+            return;
+        }
     };
 
     return (
@@ -59,6 +72,12 @@ function App() {
                                         onMouseUp={() => handleMouseUp()}
                                         onMouseEnter={() =>
                                             handleMouseEnter(
+                                                rowIndex,
+                                                nodeIndex
+                                            )
+                                        }
+                                        onMouseLeave={() =>
+                                            handleMouseLeave(
                                                 rowIndex,
                                                 nodeIndex
                                             )
@@ -101,6 +120,32 @@ const createNode = (): GridNodeData => {
         isVisited: false,
         isShortestPath: false,
     };
+};
+
+const updateSingleGridNode = (
+    grid: GridNodeData[][],
+    row: number,
+    col: number,
+    { isWall, isStart, isFinish }: GridNodeData
+) => {
+    return grid.map((rowOfNodes, rowIndex) => {
+        return rowOfNodes.map((node, nodeIndex) => {
+            if (rowIndex === row && nodeIndex === col) {
+                const newNode = { ...node };
+                if (isWall) {
+                    newNode.isWall = !node.isWall;
+                }
+                if (isStart) {
+                    newNode.isStart = !node.isStart;
+                }
+                if (isFinish) {
+                    newNode.isFinish = !node.isFinish;
+                }
+                return newNode;
+            }
+            return node;
+        });
+    });
 };
 
 export default App;
