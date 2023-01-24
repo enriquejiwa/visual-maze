@@ -10,6 +10,7 @@ export function dfs(grid: GridNodeData[][], start: Coordinates): PathfindingRetu
             finish = { row, col };
             break;
         }
+        if (grid[row][col].isVisited) continue;
         grid[row][col].isVisited = true;
         visited.push({ row, col });
         const neighbors = getNeighbors(grid, row, col);

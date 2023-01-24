@@ -21,7 +21,7 @@ function App() {
 
     const setGridWall = (row: number, col: number) => {
         setGrid((prevGrid) =>
-            updateSingleGridNode(prevGrid, row, col, { isWall: true })
+            invertSingleGridNode(prevGrid, row, col, { isWall: true })
         );
     };
 
@@ -45,12 +45,12 @@ function App() {
     const handleMouseEnter = (row: number, col: number) => {
         if (isMouseDownState.current?.isStart) {
             setGrid((prevGrid) =>
-                updateSingleGridNode(prevGrid, row, col, { isStart: true })
+                invertSingleGridNode(prevGrid, row, col, { isStart: true })
             );
             return;
         } else if (isMouseDownState.current?.isFinish) {
             setGrid((prevGrid) =>
-                updateSingleGridNode(prevGrid, row, col, { isFinish: true })
+                invertSingleGridNode(prevGrid, row, col, { isFinish: true })
             );
             return;
         }
@@ -61,13 +61,13 @@ function App() {
     const handleMouseLeave = (row: number, col: number) => {
         if (isMouseDownState.current?.isStart) {
             setGrid((prevGrid) =>
-                updateSingleGridNode(prevGrid, row, col, { isStart: true })
+                invertSingleGridNode(prevGrid, row, col, { isStart: true })
             );
             return;
         }
         if (isMouseDownState.current?.isFinish) {
             setGrid((prevGrid) =>
-                updateSingleGridNode(prevGrid, row, col, { isFinish: true })
+                invertSingleGridNode(prevGrid, row, col, { isFinish: true })
             );
             return;
         }
@@ -89,20 +89,19 @@ function App() {
             setTimeout(() => {
                 const { row, col } = visited[i];
                 setGrid((prevGrid) =>
-                    updateSingleGridNode(prevGrid, row, col, {
+                    invertSingleGridNode(prevGrid, row, col, {
                         isVisited: true,
                     })
                 );
             }, 100 * i);
         }
         if (!path) return;
-        console.log(path);
         const delay = 100 * visited.length;
         for (let i = 0; i < path.length; i++) {
             setTimeout(() => {
                 const { row, col } = path[i];
                 setGrid((prevGrid) =>
-                    updateSingleGridNode(prevGrid, row, col, {
+                    invertSingleGridNode(prevGrid, row, col, {
                         isPath: true,
                     })
                 );
@@ -179,7 +178,7 @@ const createNode = (): GridNodeData => {
     return {};
 };
 
-const updateSingleGridNode = (
+const invertSingleGridNode = (
     grid: GridNodeData[][],
     row: number,
     col: number,
