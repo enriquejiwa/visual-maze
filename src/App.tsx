@@ -1,7 +1,9 @@
 import { useRef, useState } from "react";
 import GridNode from "./components/gridNode";
+import Player from "./components/player";
 import useWindowDimensions from "./hooks/useWindowDimensions";
 import { dfs } from "./pathfinding/dfs";
+import { Control } from "./types/control.type";
 import { Coordinates, GridNodeData, MouseDownState } from "./types/grid.type";
 
 function App() {
@@ -15,6 +17,7 @@ function App() {
             Math.floor(width / 24) - 4
         )
     );
+    const [control, setControl] = useState<Control>({});
     const [mouseDown, setMouseDown] = useState<MouseDownState>({});
     const isMouseDownState = useRef<MouseDownState>();
     isMouseDownState.current = mouseDown;
@@ -109,45 +112,61 @@ function App() {
         }
     };
 
+    const handlePlayPause = () => {
+        if (!control.isPlaying) {
+            handleDFS();
+        }
+        setControl((prevControl) => ({
+            ...prevControl,
+            isPlaying: !prevControl.isPlaying,
+        }));
+    };
+
     return (
-        <div className="w-full h-screen flex items-center justify-center">
-            <button title="DFS" className="w-8 h-8" onClick={handleDFS}>
-                DFS
-            </button>
-            <div>
-                {grid.map((row, rowIndex) => {
-                    return (
-                        <div key={rowIndex} className="flex">
-                            {row.map((node, nodeIndex) => {
-                                return (
-                                    <GridNode
-                                        key={nodeIndex}
-                                        {...node}
-                                        onMouseDown={() =>
-                                            handleMouseDown(rowIndex, nodeIndex)
-                                        }
-                                        onMouseUp={() =>
-                                            handleMouseUp(rowIndex, nodeIndex)
-                                        }
-                                        onMouseEnter={() =>
-                                            handleMouseEnter(
-                                                rowIndex,
-                                                nodeIndex
-                                            )
-                                        }
-                                        onMouseLeave={() =>
-                                            handleMouseLeave(
-                                                rowIndex,
-                                                nodeIndex
-                                            )
-                                        }
-                                    />
-                                );
-                            })}
-                        </div>
-                    );
-                })}
+        <div className="w-screen h-screen flex flex-col items-center justify-center">
+            <div className="w-full h-fit flex items-center justify-center">
+                <div>
+                    {grid.map((row, rowIndex) => {
+                        return (
+                            <div key={rowIndex} className="flex">
+                                {row.map((node, nodeIndex) => {
+                                    return (
+                                        <GridNode
+                                            key={nodeIndex}
+                                            {...node}
+                                            onMouseDown={() =>
+                                                handleMouseDown(
+                                                    rowIndex,
+                                                    nodeIndex
+                                                )
+                                            }
+                                            onMouseUp={() =>
+                                                handleMouseUp(
+                                                    rowIndex,
+                                                    nodeIndex
+                                                )
+                                            }
+                                            onMouseEnter={() =>
+                                                handleMouseEnter(
+                                                    rowIndex,
+                                                    nodeIndex
+                                                )
+                                            }
+                                            onMouseLeave={() =>
+                                                handleMouseLeave(
+                                                    rowIndex,
+                                                    nodeIndex
+                                                )
+                                            }
+                                        />
+                                    );
+                                })}
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
+            <Player isPlaying={!!control.isPlaying} onPlayPause={handlePlayPause} />
         </div>
     );
 }

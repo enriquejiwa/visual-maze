@@ -1,7 +1,7 @@
 import React, { memo } from "react";
 import { GridNodeData } from "../types/grid.type";
 
-export interface GridNodeProps extends GridNodeData {
+interface GridNodeProps extends GridNodeData {
     onMouseDown: () => void;
     onMouseUp: () => void;
     onMouseEnter: () => void;
