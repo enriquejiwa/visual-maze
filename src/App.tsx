@@ -3,7 +3,7 @@ import GridNode from "./components/gridNode";
 import Player from "./components/player";
 import useWindowDimensions from "./hooks/useWindowDimensions";
 import { dfs } from "./pathfinding/dfs";
-import { Control } from "./types/control.type";
+import { Control, Resolution } from "./types/control.type";
 import { Coordinates, GridNodeData, MouseDownState } from "./types/grid.type";
 
 function App() {
@@ -18,6 +18,8 @@ function App() {
         )
     );
     const [control, setControl] = useState<Control>({});
+    const [resolution, setResolution] = useState<Resolution | undefined>();
+    const [animation, setAnimation] = useState<NodeJS.Timeout[]>([]);
     const [mouseDown, setMouseDown] = useState<MouseDownState>({});
     const isMouseDownState = useRef<MouseDownState>();
     isMouseDownState.current = mouseDown;
@@ -81,40 +83,84 @@ function App() {
             grid.map((row) => row.map((node) => ({ ...node }))),
             start
         );
+        setResolution({ visited, path });
         visualizeAlgorithm(visited, path);
     };
 
     const visualizeAlgorithm = (
         visited: Coordinates[],
-        path?: Coordinates[]
+        path?: Coordinates[],
+        from: number = 0
     ) => {
-        for (let i = 0; i < visited.length; i++) {
-            setTimeout(() => {
-                const { row, col } = visited[i];
-                setGrid((prevGrid) =>
-                    invertSingleGridNode(prevGrid, row, col, {
-                        isVisited: true,
-                    })
-                );
-            }, 100 * i);
+        const timeouts = new Array<NodeJS.Timeout>(
+            visited.length + (path?.length || 0)
+        );
+        const pathFrom = from < visited.length ? 0 : from - visited.length;
+        if (from < visited.length) {
+            for (let i = from; i < visited.length; i++) {
+                const timeout = setTimeout(() => {
+                    const { row, col } = visited[i];
+                    setGrid((prevGrid) =>
+                        invertSingleGridNode(prevGrid, row, col, {
+                            isVisited: true,
+                        })
+                    );
+                    if (!path && i === visited.length - 1) {
+                        setControl((prev) => ({
+                            ...prev,
+                            step: i,
+                            isPlaying: false,
+                        }));
+                    } else {
+                        setControl((prev) => ({ ...prev, step: i }));
+                    }
+                }, 100 * (i - from));
+                timeouts[i] = timeout;
+            }
         }
-        if (!path) return;
-        const delay = 100 * visited.length;
-        for (let i = 0; i < path.length; i++) {
-            setTimeout(() => {
-                const { row, col } = path[i];
-                setGrid((prevGrid) =>
-                    invertSingleGridNode(prevGrid, row, col, {
-                        isPath: true,
-                    })
-                );
-            }, delay + 100 * i);
+        if (path) {
+            const delay =
+                from < visited.length ? 100 * (visited.length - from) : 0;
+            for (let i = pathFrom; i < path.length; i++) {
+                const timeout = setTimeout(() => {
+                    const { row, col } = path[i];
+                    setGrid((prevGrid) =>
+                        invertSingleGridNode(prevGrid, row, col, {
+                            isPath: true,
+                        })
+                    );
+                    if (i === path.length - 1) {
+                        setControl((prev) => ({
+                            ...prev,
+                            step: visited.length + i,
+                            isPlaying: false,
+                        }));
+                    } else {
+                        setControl((prev) => ({
+                            ...prev,
+                            step: visited.length + i,
+                        }));
+                    }
+                }, delay + 100 * i);
+                timeouts[visited.length + i] = timeout;
+            }
         }
+        setAnimation(timeouts);
     };
 
     const handlePlayPause = () => {
-        if (!control.isPlaying) {
-            handleDFS();
+        if (control.isPlaying) {
+            console.log("pausing");
+            animation.forEach((timeout) => clearTimeout(timeout));
+        } else {
+            if (resolution) {
+                console.log("restarting");
+                const { visited, path } = resolution;
+                visualizeAlgorithm(visited, path, (control.step || 0) + 1);
+            } else {
+                console.log("starting");
+                handleDFS();
+            }
         }
         setControl((prevControl) => ({
             ...prevControl,
@@ -166,7 +212,10 @@ function App() {
                     })}
                 </div>
             </div>
-            <Player isPlaying={!!control.isPlaying} onPlayPause={handlePlayPause} />
+            <Player
+                isPlaying={!!control.isPlaying}
+                onPlayPause={handlePlayPause}
+            />
         </div>
     );
 }
