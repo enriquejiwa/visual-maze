@@ -58,7 +58,7 @@ function getClassNames(
     } else if (isPath) {
         classNames.push("bg-yellow-500");
     } else if (isVisited) {
-        classNames.push("bg-blue-500");
+        classNames.push("bg-blue-500", "animate-fill-in");
     }
     classNames.push("border-slate-500");
     return classNames.join(" ");
