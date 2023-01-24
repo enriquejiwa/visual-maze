@@ -176,13 +176,7 @@ const getStartCoordinates = (rows: number, columns: number): Coordinates => {
 };
 
 const createNode = (): GridNodeData => {
-    return {
-        isWall: false,
-        isStart: false,
-        isFinish: false,
-        isVisited: false,
-        isPath: false,
-    };
+    return {};
 };
 
 const updateSingleGridNode = (

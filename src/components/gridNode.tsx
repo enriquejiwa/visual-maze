@@ -1,4 +1,4 @@
-import { memo } from "react";
+import React, { memo } from "react";
 import { GridNodeData } from "../types/grid.type";
 
 export interface GridNodeProps extends GridNodeData {
@@ -28,8 +28,12 @@ function GridNode({
                 isVisited,
                 isPath
             )}
-            onMouseDown={onMouseDown}
-            onMouseUp={onMouseUp}
+            onMouseDown={(e: React.MouseEvent) => {
+                e.button === 0 && onMouseDown();
+            }}
+            onMouseUp={(e: React.MouseEvent) => {
+                e.button === 0 && onMouseUp();
+            }}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
             onDragStart={(e) => e.preventDefault()}
