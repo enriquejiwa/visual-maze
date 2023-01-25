@@ -21,4 +21,5 @@ export interface Coordinates {
 export interface PathfindingReturn {
     visited: Coordinates[];
     path?: Coordinates[];
+    solved: GridNodeData[][];
 }

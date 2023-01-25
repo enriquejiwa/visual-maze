@@ -1,6 +1,13 @@
-import { Coordinates, GridNodeData, PathfindingReturn } from "../types/grid.type";
+import {
+    Coordinates,
+    GridNodeData,
+    PathfindingReturn,
+} from "../types/grid.type";
 
-export function dfs(grid: GridNodeData[][], start: Coordinates): PathfindingReturn {
+export function dfs(
+    grid: GridNodeData[][],
+    start: Coordinates
+): PathfindingReturn {
     const visited = [start];
     const stack = [start];
     let finish: Coordinates | undefined;
@@ -19,9 +26,9 @@ export function dfs(grid: GridNodeData[][], start: Coordinates): PathfindingRetu
             stack.push(neighbor);
         }
     }
-    if (!finish) return {visited};
-    const path = getPath(grid, finish);  
-    return {visited, path};
+    if (!finish) return { visited, solved: grid };
+    const path = getPath(grid, finish);
+    return { visited, path, solved: grid };
 }
 
 export function getPath(grid: GridNodeData[][], finish: Coordinates) {
@@ -30,6 +37,7 @@ export function getPath(grid: GridNodeData[][], finish: Coordinates) {
     while (grid[row][col].prevNode) {
         const { row: r, col: c } = grid[row][col].prevNode as Coordinates;
         path.push({ row: r, col: c });
+        grid[r][c].isPath = true;
         row = r;
         col = c;
     }

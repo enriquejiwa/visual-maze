@@ -1,4 +1,4 @@
-import { Coordinates } from "./grid.type";
+import { GridNodeData, PathfindingReturn } from "./grid.type";
 
 export interface Control {
     isPlaying?: boolean;
@@ -6,7 +6,6 @@ export interface Control {
     step?: number;
 }
 
-export interface Resolution {
-    visited: Coordinates[];
-    path?: Coordinates[];
+export interface Resolution extends PathfindingReturn {
+    initial: GridNodeData[][];
 }

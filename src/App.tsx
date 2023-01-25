@@ -22,7 +22,9 @@ function App() {
     const [animation, setAnimation] = useState<NodeJS.Timeout[]>([]);
     const [mouseDown, setMouseDown] = useState<MouseDownState>({});
     const isMouseDownState = useRef<MouseDownState>();
+    const controlState = useRef<Control>();
     isMouseDownState.current = mouseDown;
+    controlState.current = control;
 
     const setGridWall = (row: number, col: number) => {
         setGrid((prevGrid) =>
@@ -31,6 +33,9 @@ function App() {
     };
 
     const handleMouseDown = (row: number, col: number) => {
+        if (controlState.current?.step) return;
+        if (controlState.current?.step === 0) clearControl();
+        
         if (grid[row][col].isStart) {
             setMouseDown({ isStart: true });
             return;
@@ -79,11 +84,11 @@ function App() {
     };
 
     const handleDFS = () => {
-        const { visited, path } = dfs(
+        const { visited, path, solved } = dfs(
             grid.map((row) => row.map((node) => ({ ...node }))),
             start
         );
-        setResolution({ visited, path });
+        setResolution({ visited, path, solved, initial: grid });
         visualizeAlgorithm(visited, path);
     };
 
@@ -150,15 +155,12 @@ function App() {
 
     const handlePlayPause = () => {
         if (control.isPlaying) {
-            console.log("pausing");
             animation.forEach((timeout) => clearTimeout(timeout));
         } else {
             if (resolution) {
-                console.log("restarting");
                 const { visited, path } = resolution;
                 visualizeAlgorithm(visited, path, (control.step || 0) + 1);
             } else {
-                console.log("starting");
                 handleDFS();
             }
         }
@@ -166,6 +168,93 @@ function App() {
             ...prevControl,
             isPlaying: !prevControl.isPlaying,
         }));
+    };
+
+    const handleStep = (step: 1 | -1) => {
+        if (control.isPlaying) return;
+        if (!resolution) return;
+        const { visited, path } = resolution;
+        const target_step = (control.step || 0) + (step === 1 ? 1 : 0);
+        const next_step = (control.step || 0) + step;
+        if (target_step < 0) return;
+        if (target_step >= visited.length + (path?.length || 0)) return;
+        if (target_step < visited.length) {
+            setGrid((prevGrid) =>
+                invertSingleGridNode(
+                    prevGrid,
+                    visited[target_step].row,
+                    visited[target_step].col,
+                    {
+                        isVisited: true,
+                    }
+                )
+            );
+            if (!path && next_step === visited.length - 1) {
+                setControl((prev) => ({
+                    ...prev,
+                    step: next_step,
+                    isPlaying: false,
+                }));
+            } else {
+                setControl((prev) => ({ ...prev, step: next_step }));
+            }
+        } else if (path) {
+            setGrid((prevGrid) =>
+                invertSingleGridNode(
+                    prevGrid,
+                    path[target_step - visited.length].row,
+                    path[target_step - visited.length].col,
+                    {
+                        isPath: true,
+                    }
+                )
+            );
+            if (next_step === path.length - 1) {
+                setControl((prev) => ({
+                    ...prev,
+                    step: next_step,
+                    isPlaying: false,
+                }));
+            } else {
+                setControl((prev) => ({
+                    ...prev,
+                    step: next_step,
+                }));
+            }
+        }
+    };
+
+    const handleSkip = () => {
+        if (!resolution) return;
+        if (control.isPlaying) {
+            animation.forEach((timeout) => clearTimeout(timeout));
+        }
+        const { visited, path, solved } = resolution;
+        setGrid(solved);
+        setControl((prev) => ({
+            ...prev,
+            step: visited.length + (path?.length || 0) - 1,
+            isPlaying: false,
+        }));
+    };
+
+    const handleClear = () => {
+        if (!resolution) return;
+        if (control.isPlaying) {
+            animation.forEach((timeout) => clearTimeout(timeout));
+        }
+        setGrid(resolution.initial);
+        setControl((prev) => ({
+            ...prev,
+            step: 0,
+            isPlaying: false,
+        }));
+    };
+
+    const clearControl = () => {
+        setControl({});
+        setResolution(undefined);
+        setAnimation([]);
     };
 
     return (
@@ -215,6 +304,10 @@ function App() {
             <Player
                 isPlaying={!!control.isPlaying}
                 onPlayPause={handlePlayPause}
+                onStepBack={() => handleStep(-1)}
+                onStepForward={() => handleStep(1)}
+                onSkip={handleSkip}
+                onClear={handleClear}
             />
         </div>
     );
