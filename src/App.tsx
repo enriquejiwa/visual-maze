@@ -17,7 +17,7 @@ function App() {
             Math.floor(width / 24) - 4
         )
     );
-    const [control, setControl] = useState<Control>({});
+    const [control, setControl] = useState<Control>({speed: 1});
     const [resolution, setResolution] = useState<Resolution | undefined>();
     const [animation, setAnimation] = useState<NodeJS.Timeout[]>([]);
     const [mouseDown, setMouseDown] = useState<MouseDownState>({});
@@ -119,13 +119,13 @@ function App() {
                     } else {
                         setControl((prev) => ({ ...prev, step: i }));
                     }
-                }, 100 * (i - from));
+                }, 100 * (i - from) / (controlState.current?.speed || 1));
                 timeouts[i] = timeout;
             }
         }
         if (path) {
             const delay =
-                from < visited.length ? 100 * (visited.length - from) : 0;
+                from < visited.length ? visited.length - from : 0;
             for (let i = pathFrom; i < path.length; i++) {
                 const timeout = setTimeout(() => {
                     const { row, col } = path[i];
@@ -146,7 +146,7 @@ function App() {
                             step: visited.length + i,
                         }));
                     }
-                }, delay + 100 * i);
+                }, 100 * (delay + i) / (controlState.current?.speed || 1));
                 timeouts[visited.length + i] = timeout;
             }
         }
@@ -251,8 +251,26 @@ function App() {
         }));
     };
 
+    const handleSpeedChange = () => {
+        if (control.isPlaying) return;
+        let speed: 1 | 2 | 4;
+        switch (control.speed) {
+            case 1:
+                speed = 2;
+                break;
+            case 2:
+                speed = 4;
+                break;
+            case 4:
+            default:
+                speed = 1;
+                break;
+        }
+        setControl((prev) => ({ ...prev, speed }));
+    }
+
     const clearControl = () => {
-        setControl({});
+        setControl((prev) => ({speed: prev.speed}));
         setResolution(undefined);
         setAnimation([]);
     };
@@ -308,6 +326,8 @@ function App() {
                 onStepForward={() => handleStep(1)}
                 onSkip={handleSkip}
                 onClear={handleClear}
+                speed={control.speed}
+                onSpeedChange={handleSpeedChange}
             />
         </div>
     );

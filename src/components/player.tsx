@@ -7,20 +7,24 @@ import SkipPreviousIcon from '@material-ui/icons/SkipPrevious';
 
 interface PlayerProps {
     isPlaying: boolean;
+    speed: number;
     onPlayPause: () => void;
     onStepBack: () => void;
     onStepForward: () => void;
     onSkip: () => void;
     onClear: () => void;
+    onSpeedChange: () => void;
 }
 
 function Player({
     isPlaying,
+    speed,
     onPlayPause,
     onStepBack,
     onStepForward,
     onSkip,
     onClear,
+    onSpeedChange
 }: PlayerProps) {
     return (
         <div className="w-1/3 bg-slate-50 text-slate-500 dark:bg-slate-600 dark:text-slate-200 rounded-b-xl flex items-center">
@@ -84,8 +88,10 @@ function Player({
                 <button
                     type="button"
                     className="rounded-lg text-xs leading-6 font-semibold px-2 ring-2 ring-inset ring-slate-500 text-slate-500 dark:text-slate-100 dark:ring-0 dark:bg-slate-500"
+                    aria-label="Speed"
+                    onClick={onSpeedChange}
                 >
-                    1x
+                    {speed}x
                 </button>
             </div>
         </div>
