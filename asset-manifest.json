@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/visual-maze/static/css/main.6afe4d01.css",
+    "main.js": "/visual-maze/static/js/main.80fcf782.js",
+    "static/js/787.ad332b6b.chunk.js": "/visual-maze/static/js/787.ad332b6b.chunk.js",
+    "index.html": "/visual-maze/index.html",
+    "main.6afe4d01.css.map": "/visual-maze/static/css/main.6afe4d01.css.map",
+    "main.80fcf782.js.map": "/visual-maze/static/js/main.80fcf782.js.map",
+    "787.ad332b6b.chunk.js.map": "/visual-maze/static/js/787.ad332b6b.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.6afe4d01.css",
+    "static/js/main.80fcf782.js"
+  ]
+}
