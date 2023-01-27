@@ -3,7 +3,7 @@ import GridNode from "./components/gridNode";
 import Player from "./components/player";
 import useWindowDimensions from "./hooks/useWindowDimensions";
 import { dfs } from "./pathfinding/dfs";
-import { Control, Resolution } from "./types/control.type";
+import { AlgorithmOption, Control, Resolution } from "./types/control.type";
 import { Coordinates, GridNodeData, MouseDownState } from "./types/grid.type";
 
 function App() {
@@ -17,7 +17,10 @@ function App() {
             Math.floor(width / 24) - 4
         )
     );
-    const [control, setControl] = useState<Control>({speed: 1});
+    const [control, setControl] = useState<Control>({
+        speed: 1,
+        algorithm: { value: "dfs", label: "Depth-first search" },
+    });
     const [resolution, setResolution] = useState<Resolution | undefined>();
     const [animation, setAnimation] = useState<NodeJS.Timeout[]>([]);
     const [mouseDown, setMouseDown] = useState<MouseDownState>({});
@@ -35,7 +38,7 @@ function App() {
     const handleMouseDown = (row: number, col: number) => {
         if (controlState.current?.step) return;
         if (controlState.current?.step === 0) clearControl();
-        
+
         if (grid[row][col].isStart) {
             setMouseDown({ isStart: true });
             return;
@@ -119,13 +122,12 @@ function App() {
                     } else {
                         setControl((prev) => ({ ...prev, step: i }));
                     }
-                }, 100 * (i - from) / (controlState.current?.speed || 1));
+                }, (100 * (i - from)) / (controlState.current?.speed || 1));
                 timeouts[i] = timeout;
             }
         }
         if (path) {
-            const delay =
-                from < visited.length ? visited.length - from : 0;
+            const delay = from < visited.length ? visited.length - from : 0;
             for (let i = pathFrom; i < path.length; i++) {
                 const timeout = setTimeout(() => {
                     const { row, col } = path[i];
@@ -146,7 +148,7 @@ function App() {
                             step: visited.length + i,
                         }));
                     }
-                }, 100 * (delay + i) / (controlState.current?.speed || 1));
+                }, (100 * (delay + i)) / (controlState.current?.speed || 1));
                 timeouts[visited.length + i] = timeout;
             }
         }
@@ -267,10 +269,18 @@ function App() {
                 break;
         }
         setControl((prev) => ({ ...prev, speed }));
-    }
+    };
+
+    const handleAlgorithmChange = (algorithm: AlgorithmOption) => {
+        if (control.isPlaying) return;
+        setControl((prev) => ({ ...prev, algorithm }));
+    };
 
     const clearControl = () => {
-        setControl((prev) => ({speed: prev.speed}));
+        setControl((prev) => ({
+            speed: prev.speed,
+            algorithm: prev.algorithm,
+        }));
         setResolution(undefined);
         setAnimation([]);
     };
@@ -321,12 +331,15 @@ function App() {
             </div>
             <Player
                 isPlaying={!!control.isPlaying}
+                isReady={!!resolution}
+                algorithm={control.algorithm}
                 onPlayPause={handlePlayPause}
                 onStepBack={() => handleStep(-1)}
                 onStepForward={() => handleStep(1)}
                 onSkip={handleSkip}
                 onClear={handleClear}
                 speed={control.speed}
+                onAlgorithmChange={handleAlgorithmChange}
                 onSpeedChange={handleSpeedChange}
             />
         </div>

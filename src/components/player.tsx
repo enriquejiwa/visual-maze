@@ -1,99 +1,107 @@
-import PauseIcon from "@material-ui/icons/Pause";
-import PlayArrowIcon from "@material-ui/icons/PlayArrow";
-import RedoIcon from "@material-ui/icons/Redo";
-import SkipNextIcon from "@material-ui/icons/SkipNext";
-import UndoIcon from "@material-ui/icons/Undo";
-import SkipPreviousIcon from '@material-ui/icons/SkipPrevious';
+import {
+    ArrowPathIcon,
+    ArrowUturnLeftIcon,
+    ArrowUturnRightIcon,
+    ChevronDoubleRightIcon,
+    PauseIcon,
+    PlayIcon,
+} from "@heroicons/react/20/solid";
+import { AlgorithmOption } from "../types/control.type";
+import AlgorithmSelector from "./algorithmSelector";
 
 interface PlayerProps {
     isPlaying: boolean;
+    isReady: boolean;
+    algorithm: AlgorithmOption;
     speed: number;
     onPlayPause: () => void;
     onStepBack: () => void;
     onStepForward: () => void;
     onSkip: () => void;
     onClear: () => void;
+    onAlgorithmChange: (selected: AlgorithmOption) => void;
     onSpeedChange: () => void;
 }
 
 function Player({
     isPlaying,
+    isReady,
+    algorithm,
     speed,
     onPlayPause,
     onStepBack,
     onStepForward,
     onSkip,
     onClear,
-    onSpeedChange
+    onAlgorithmChange,
+    onSpeedChange,
 }: PlayerProps) {
     return (
-        <div className="w-1/3 bg-slate-50 text-slate-500 dark:bg-slate-600 dark:text-slate-200 rounded-b-xl flex items-center">
-            <div className="flex-auto flex items-center justify-evenly">
-                <button type="button" aria-label="Add to favorites">
-                    <svg width="24" height="24">
-                        <path
-                            d="M7 6.931C7 5.865 7.853 5 8.905 5h6.19C16.147 5 17 5.865 17 6.931V19l-5-4-5 4V6.931Z"
-                            fill="currentColor"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                    </svg>
-                </button>
-                <button
-                    type="button"
-                    className="hidden sm:block lg:hidden xl:block"
-                    aria-label="Clear"
-                    onClick={onClear}
-                >
-                    <SkipPreviousIcon fontSize="large" />
-                </button>
-                <button
-                    type="button"
-                    aria-label="Step back"
-                    onClick={onStepBack}
-                >
-                    <UndoIcon fontSize="large" />
-                </button>
-            </div>
+        <div className="w-fit px-8 bg-slate-50 text-slate-500 dark:bg-slate-600 dark:text-slate-200 rounded-b-xl flex items-center space-x-8">
+            <AlgorithmSelector
+                selected={algorithm}
+                setSelected={onAlgorithmChange}
+            />
+            {isReady && (
+                <>
+                    <button
+                        type="button"
+                        className="hidden sm:block lg:hidden xl:block hover:text-cyan-500"
+                        aria-label="Clear"
+                        onClick={onClear}
+                    >
+                        <ArrowPathIcon className="h-6 w-6" />
+                    </button>
+                    <button
+                        type="button"
+                        className="hidden sm:block lg:hidden xl:block hover:text-cyan-500"
+                        aria-label="Step back"
+                        onClick={onStepBack}
+                    >
+                        <ArrowUturnLeftIcon className="h-6 w-6" />
+                    </button>
+                </>
+            )}
             <button
                 type="button"
-                className="bg-white text-slate-900 dark:bg-slate-100 dark:text-slate-700 flex-none -my-2 mx-auto w-20 h-20 rounded-full ring-1 ring-slate-900/5 shadow-md flex items-center justify-center"
+                className="bg-white dark:bg-slate-100 dark:text-slate-700 hover:text-cyan-500 flex-none -my-2 mx-auto w-20 h-20 rounded-full ring-1 ring-slate-900/5 shadow-md flex items-center justify-center"
                 aria-label="Play/Pause"
                 onClick={onPlayPause}
             >
                 {isPlaying ? (
-                    <PauseIcon fontSize="large" />
+                    <PauseIcon className="h-8 w-8" />
                 ) : (
-                    <PlayArrowIcon fontSize="large" />
+                    <PlayIcon className="h-8 w-8" />
                 )}
             </button>
-            <div className="flex-auto flex items-center justify-evenly">
-                <button
-                    type="button"
-                    aria-label="Step forward"
-                    onClick={onStepForward}
-                >
-                    <RedoIcon fontSize="large" />
-                </button>
-                <button
-                    type="button"
-                    className="hidden sm:block lg:hidden xl:block"
-                    aria-label="Skip"
-                    onClick={onSkip}
-                >
-                    <SkipNextIcon fontSize="large" />
-                </button>
-                <button
-                    type="button"
-                    className="rounded-lg text-xs leading-6 font-semibold px-2 ring-2 ring-inset ring-slate-500 text-slate-500 dark:text-slate-100 dark:ring-0 dark:bg-slate-500"
-                    aria-label="Speed"
-                    onClick={onSpeedChange}
-                >
-                    {speed}x
-                </button>
-            </div>
+            {isReady && (
+                <>
+                    <button
+                        type="button"
+                        className="hidden sm:block lg:hidden xl:block hover:text-cyan-500"
+                        aria-label="Step forward"
+                        onClick={onStepForward}
+                    >
+                        <ArrowUturnRightIcon className="h-6 w-6" />
+                    </button>
+                    <button
+                        type="button"
+                        className="hidden sm:block lg:hidden xl:block hover:text-cyan-500"
+                        aria-label="Skip"
+                        onClick={onSkip}
+                    >
+                        <ChevronDoubleRightIcon className="h-6 w-6" />
+                    </button>
+                </>
+            )}
+            <button
+                type="button"
+                className="rounded-lg text-xs leading-6 font-semibold px-2 ring-2 ring-inset ring-slate-500 text-slate-500 dark:text-slate-100 dark:ring-0 dark:bg-slate-500 hover:text-cyan-500 hover:ring-cyan-500"
+                aria-label="Speed"
+                onClick={onSpeedChange}
+            >
+                {speed}x
+            </button>
         </div>
     );
 }
