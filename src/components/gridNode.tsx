@@ -48,19 +48,20 @@ function getClassNames(
     isVisited?: boolean,
     isPath?: boolean
 ) {
-    const classNames = ["border", "w-6", "h-6"];
+    const classNames = ["border w-6 h-6 border-slate-500 dark:border-slate-400"];
     if (isWall) {
-        classNames.push("bg-slate-800", "border-slate-800");
+        classNames.push(
+            "bg-slate-800 dark:bg-slate-300",
+        );
     } else if (isStart) {
-        classNames.push("bg-green-500", "cursor-move");
+        classNames.push("bg-green-500 cursor-move");
     } else if (isFinish) {
-        classNames.push("bg-red-500", "cursor-move");
+        classNames.push("bg-red-500 cursor-move");
     } else if (isPath) {
         classNames.push("bg-yellow-500");
     } else if (isVisited) {
-        classNames.push("bg-blue-500", "animate-fill-in");
+        classNames.push("bg-blue-500 animate-fill-in");
     }
-    classNames.push("border-slate-500");
     return classNames.join(" ");
 }
 

@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import GridNode from "./components/gridNode";
 import Player from "./components/player";
 import useWindowDimensions from "./hooks/useWindowDimensions";
+import { bfs } from "./pathfinding/bfs";
 import { dfs } from "./pathfinding/dfs";
 import { AlgorithmOption, Control, Resolution } from "./types/control.type";
 import { Coordinates, GridNodeData, MouseDownState } from "./types/grid.type";
@@ -36,8 +37,7 @@ function App() {
     };
 
     const handleMouseDown = (row: number, col: number) => {
-        if (controlState.current?.step) return;
-        if (controlState.current?.step === 0) clearControl();
+        if (controlState.current?.step !== undefined) clearControl();
 
         if (grid[row][col].isStart) {
             setMouseDown({ isStart: true });
@@ -86,14 +86,26 @@ function App() {
         }
     };
 
-    const handleDFS = () => {
-        const { visited, path, solved } = dfs(
-            grid.map((row) => row.map((node) => ({ ...node }))),
-            start
-        );
-        setResolution({ visited, path, solved, initial: grid });
+    const handleAlgorithm = () => {
+        const copyGrid = grid.map((row) => row.map((node) => ({ ...node })));
+        let visited, path, solved;
+        switch (control.algorithm.value) {
+            case "dfs":
+                ({ visited, path, solved } = dfs(
+                    copyGrid,
+                    start
+                ));
+                break;
+            case "bfs":
+                ({ visited, path, solved } = bfs(
+                    copyGrid,
+                    start
+                ));
+                break;
+        }
+        setResolution({ visited, path, solved });
         visualizeAlgorithm(visited, path);
-    };
+    }
 
     const visualizeAlgorithm = (
         visited: Coordinates[],
@@ -163,7 +175,7 @@ function App() {
                 const { visited, path } = resolution;
                 visualizeAlgorithm(visited, path, (control.step || 0) + 1);
             } else {
-                handleDFS();
+                handleAlgorithm();
             }
         }
         setControl((prevControl) => ({
@@ -245,7 +257,7 @@ function App() {
         if (control.isPlaying) {
             animation.forEach((timeout) => clearTimeout(timeout));
         }
-        setGrid(resolution.initial);
+        setGrid((prevGrid) => clearGrid(prevGrid));
         setControl((prev) => ({
             ...prev,
             step: 0,
@@ -273,7 +285,10 @@ function App() {
 
     const handleAlgorithmChange = (algorithm: AlgorithmOption) => {
         if (control.isPlaying) return;
-        setControl((prev) => ({ ...prev, algorithm }));
+        setControl((prev) => ({ speed: prev.speed, algorithm }));
+        setResolution(undefined);
+        setAnimation([]);
+        setGrid((prevGrid) => clearGrid(prevGrid));
     };
 
     const clearControl = () => {
@@ -283,10 +298,11 @@ function App() {
         }));
         setResolution(undefined);
         setAnimation([]);
+        setGrid((prevGrid) => clearGrid(prevGrid));
     };
 
     return (
-        <div className="w-screen h-screen flex flex-col items-center justify-center">
+        <div className="w-screen h-screen flex flex-col items-center justify-center dark:bg-slate-800">
             <div className="w-full h-fit flex items-center justify-center">
                 <div>
                     {grid.map((row, rowIndex) => {
@@ -359,6 +375,17 @@ const createGrid = (rows: number, columns: number): GridNodeData[][] => {
     grid[row][col].isStart = true;
     grid[rows - row - 1][columns - col - 1].isFinish = true;
     return grid;
+};
+
+const clearGrid = (grid: GridNodeData[][]): GridNodeData[][] => {
+    return grid.map((rowOfNodes) => {
+        return rowOfNodes.map((node) => {
+            const newNode = { ...node };
+            newNode.isVisited = false;
+            newNode.isPath = false;
+            return newNode;
+        });
+    });
 };
 
 const getStartCoordinates = (rows: number, columns: number): Coordinates => {

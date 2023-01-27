@@ -1,8 +1,7 @@
-import { GridNodeData, PathfindingReturn } from "./grid.type";
+import { PathfindingReturn } from "./grid.type";
 
 export interface Control {
     isPlaying?: boolean;
-    isComputing?: boolean;
     step?: number;
     speed: 1 | 2 | 4;
     algorithm: AlgorithmOption;
@@ -15,6 +14,4 @@ export interface AlgorithmOption {
 
 export type Algorithm = "bfs" | "dfs";
 
-export interface Resolution extends PathfindingReturn {
-    initial: GridNodeData[][];
-}
+export interface Resolution extends PathfindingReturn {}

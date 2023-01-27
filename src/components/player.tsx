@@ -43,24 +43,14 @@ function Player({
                 setSelected={onAlgorithmChange}
             />
             {isReady && (
-                <>
-                    <button
-                        type="button"
-                        className="hidden sm:block lg:hidden xl:block hover:text-cyan-500"
-                        aria-label="Clear"
-                        onClick={onClear}
-                    >
-                        <ArrowPathIcon className="h-6 w-6" />
-                    </button>
-                    <button
-                        type="button"
-                        className="hidden sm:block lg:hidden xl:block hover:text-cyan-500"
-                        aria-label="Step back"
-                        onClick={onStepBack}
-                    >
-                        <ArrowUturnLeftIcon className="h-6 w-6" />
-                    </button>
-                </>
+                <button
+                    type="button"
+                    className="hidden sm:block lg:hidden xl:block hover:text-cyan-500"
+                    aria-label="Step back"
+                    onClick={onStepBack}
+                >
+                    <ArrowUturnLeftIcon className="h-6 w-6" />
+                </button>
             )}
             <button
                 type="button"
@@ -92,13 +82,24 @@ function Player({
                     >
                         <ChevronDoubleRightIcon className="h-6 w-6" />
                     </button>
+                    <button
+                        type="button"
+                        className="hidden sm:block lg:hidden xl:block hover:text-cyan-500"
+                        aria-label="Clear"
+                        onClick={onClear}
+                    >
+                        <ArrowPathIcon className="h-6 w-6" />
+                    </button>
                 </>
             )}
             <button
                 type="button"
-                className="rounded-lg text-xs leading-6 font-semibold px-2 ring-2 ring-inset ring-slate-500 text-slate-500 dark:text-slate-100 dark:ring-0 dark:bg-slate-500 hover:text-cyan-500 hover:ring-cyan-500"
+                className={`rounded-lg text-xs leading-6 font-semibold px-2 ring-2 ring-inset ring-slate-500 text-slate-500 dark:text-slate-100 dark:ring-0 dark:bg-slate-500 ${
+                    !isPlaying && "hover:text-cyan-500 hover:ring-cyan-500"
+                }`}
                 aria-label="Speed"
                 onClick={onSpeedChange}
+                disabled={isPlaying}
             >
                 {speed}x
             </button>

@@ -1,19 +1,12 @@
-import {
-    Coordinates,
-    GridNodeData,
-    PathfindingReturn,
-} from "../types/grid.type";
+import { Coordinates, GridNodeData } from "../types/grid.type";
 import { getNeighbors, getPath } from "./helpers";
 
-export function dfs(
-    grid: GridNodeData[][],
-    start: Coordinates
-): PathfindingReturn {
+export function bfs(grid: GridNodeData[][], start: Coordinates) {
     const visited = [start];
-    const stack = [start];
+    const queue = [start];
     let finish: Coordinates | undefined;
-    while (stack.length > 0) {
-        const { row, col } = stack.pop() as Coordinates;
+    while (queue.length > 0) {
+        const { row, col } = queue.shift() as Coordinates;
         if (grid[row][col].isFinish) {
             finish = { row, col };
             break;
@@ -24,7 +17,7 @@ export function dfs(
         const neighbors = getNeighbors(grid, row, col);
         for (const neighbor of neighbors) {
             grid[neighbor.row][neighbor.col].prevNode = { row, col };
-            stack.push(neighbor);
+            queue.push(neighbor);
         }
     }
     if (!finish) return { visited, solved: grid };
